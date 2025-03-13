@@ -1,6 +1,7 @@
 package dar.member.controller;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -158,7 +159,11 @@ public class MemberController {
 	@GetMapping("/{memberId}")
 	public MemberData retrieveMemberById(@PathVariable Long memberId) {
 		log.info("Retrieving member with ID={}", memberId);
-		return memberService.retrieveMemberById(memberId);
+		try {
+	        return memberService.retrieveMemberById(memberId);
+	    } catch (NoSuchElementException e) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Member with ID=" + memberId + " not found.", e);
+	    }
 	}
 
 	/**
