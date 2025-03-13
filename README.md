@@ -58,7 +58,7 @@
 Clone the project
 
 ```bash
-  git clone https://github.com/ldavis57/mysql-java-projects
+  git clone https://github.com/ldavis57/FinalProject)
 ```
 🤝 Contact
 Lana Davis - davis.lanac@gmail.com
