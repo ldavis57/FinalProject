@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    username: dar_members  # Database username
+    password: dar_members  # Database password
+    url: jdbc:mysql://localhost:3306/dar_members  # JDBC connection URL for MySQL
+    driver-class-name: com.mysql.cj.jdbc.Driver  # MySQL JDBC driver class
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # Specifies Hibernate's database schema generation strategy.
+                        # Options: 
+                        # - `create` (Drops and creates the database schema at startup)
+                        # - `update` (Modifies schema without dropping data)
+                        # - `validate` (Checks schema without making changes)
+                        # - `none` (Disables schema generation)
+    show-sql: true  # Enables SQL query logging in the console for debugging
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: never  # Determines when SQL initialization scripts should be run.
+                    # Options:
+                    # - `always` (Executes scripts at startup for all environments)
+                    # - `never` (Does not run initialization scripts)
+                    # - `embedded` (Runs scripts only for embedded databases like H2)

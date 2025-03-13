@@ -1,0 +1,38 @@
+      
+[
+  {
+    "employeeId": 1,
+    "employeeFirstName": "Jenny",
+    "employeeLastName": "Mohoney",
+    "employeePhone": "679-867-5309",
+    "employeeJobTitLe": "Veterinarian"
+  },
+  {
+    "employeeId": 2,
+    "employeeFirstName": "Katie",
+    "employeeLastName": "Burns",
+    "employeePhone": "302-634-5789",
+    "employeeJobTitLe": "Manager"
+  },
+  {
+    "employeeId": 3,
+    "employeeFirstName": "Felicia",
+    "employeeLastName": "Day",
+    "employeePhone": "517-420-9964",
+    "employeeJobTitLe": "Veterinarian Assistant"
+  },
+  {
+    "employeeId": 4,
+    "employeeFirstName": "Adams",
+    "employeeLastName": "Burns",
+    "employeePhone": "517-420-6868",
+    "employeeJobTitLe": "Supervisor"
+  },
+  {
+    "employeeFirstName": "Gracie",
+    "employeeLastName": "Allan",
+    "employeePhone": "517-420-WOLD",
+    "employeeJobTitLe": "Receptionist"
+  }
+]
+    
