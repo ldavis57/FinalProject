@@ -1,8 +1,8 @@
-﻿# Pet Store project
+﻿# Final Project
 <div align="center">
 
   <img src="/src/main/resources/Readme_Logo.png" alt="logo" width="200" height="auto" />
-  <h1>My Pet Store</h1>
+  <h1>Members</h1>
   
   <p>
     Showcasing Java, MySQL, Maven, JPA, Spring Boot, and Lombok
