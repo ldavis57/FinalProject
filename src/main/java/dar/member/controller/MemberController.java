@@ -1,10 +1,13 @@
 package dar.member.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +30,7 @@ import dar.member.service.MemberService;
  * update, and retrieve member data.
  */
 @RestController
-@RequestMapping("/dar_member") // specifies all calls start with dar_member
+@RequestMapping("/dar_members") // specifies all calls start with dar_member
 @Slf4j // Enables logging using Lombok
 public class MemberController {
 
@@ -55,14 +58,16 @@ public class MemberController {
 	/**
 	 * Adds an chapter to a specific member.
 	 * 
-	 * @param memberId       The ID of the member.
+	 * @param memberId      The ID of the member.
 	 * @param memberChapter The chapter details received in the request body.
 	 * @return The added chapter data.
 	 */
 	@PostMapping("/{memberId}/chapter")
 	@ResponseStatus(code = HttpStatus.CREATED) // Returns HTTP 201 Created on success
-	public MemberChapter addChapterToMember(@PathVariable Long memberId,
-			@RequestBody MemberChapter memberChapter) { // @RequestBody: body is json
+	public MemberChapter addChapterToMember(@PathVariable Long memberId, @RequestBody MemberChapter memberChapter) { // @RequestBody:
+																														// body
+																														// is
+																														// json
 		log.info("Adding chapter {} to member with ID={}", memberChapter, memberId);
 		return memberService.saveChapter(memberId, memberChapter);
 	}
@@ -70,14 +75,13 @@ public class MemberController {
 	/**
 	 * Adds a patriot to a specific member.
 	 * 
-	 * @param memberId       The ID of the member.
+	 * @param memberId      The ID of the member.
 	 * @param memberPatriot The patriot details received in the request body.
 	 * @return The added patriot data.
 	 */
 	@PostMapping("/{memberId}/patriot")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	public MemberPatriot addPatriotToMember(@PathVariable Long memberId,
-			@RequestBody MemberPatriot memberPatriot) {
+	public MemberPatriot addPatriotToMember(@PathVariable Long memberId, @RequestBody MemberPatriot memberPatriot) {
 		log.info("Adding patriot {} to member with ID={}", memberPatriot, memberId);
 		return memberService.savePatriot(memberId, memberPatriot);
 	}
@@ -99,8 +103,8 @@ public class MemberController {
 	/**
 	 * Updates an chapter in a specific member.
 	 * 
-	 * @param memberId       The ID of the member.
-	 * @param chapterId       The ID of the chapter to be updated.
+	 * @param memberId      The ID of the member.
+	 * @param chapterId     The ID of the chapter to be updated.
 	 * @param memberChapter The updated chapter data.
 	 * @return The updated chapter data.
 	 */
@@ -114,8 +118,8 @@ public class MemberController {
 	/**
 	 * Updates a patriot in a specific member.
 	 * 
-	 * @param memberId       The ID of the member.
-	 * @param patriotId       The ID of the patriot to be updated.
+	 * @param memberId      The ID of the member.
+	 * @param patriotId     The ID of the patriot to be updated.
 	 * @param memberPatriot The updated patriot data.
 	 * @return The updated patriot data.
 	 */
@@ -160,10 +164,10 @@ public class MemberController {
 	public MemberData retrieveMemberById(@PathVariable Long memberId) {
 		log.info("Retrieving member with ID={}", memberId);
 		try {
-	        return memberService.retrieveMemberById(memberId);
-	    } catch (NoSuchElementException e) {
-	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Member with ID=" + memberId + " not found.", e);
-	    }
+			return memberService.retrieveMemberById(memberId);
+		} catch (NoSuchElementException e) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Member with ID=" + memberId + " not found.", e);
+		}
 	}
 
 	/**
@@ -181,7 +185,7 @@ public class MemberController {
 	/**
 	 * Retrieves a specific chapter by their ID from a member.
 	 * 
-	 * @param memberId The ID of the member.
+	 * @param memberId  The ID of the member.
 	 * @param chapterId The ID of the chapter to retrieve.
 	 * @return The chapter data if found.
 	 */
@@ -228,7 +232,7 @@ public class MemberController {
 	/**
 	 * Retrieves a specific patriot by their ID from a member.
 	 * 
-	 * @param memberId The ID of the member.
+	 * @param memberId  The ID of the member.
 	 * @param patriotId The ID of the patriot to retrieve.
 	 * @return The patriot data if found.
 	 */
@@ -246,12 +250,14 @@ public class MemberController {
 	@DeleteMapping("/{memberId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteMemberById(@PathVariable Long memberId) {
-	    log.info("Deleting member with ID={}", memberId);
-	    memberService.deleteMember(memberId);
-	}	/**
+		log.info("Deleting member with ID={}", memberId);
+		memberService.deleteMember(memberId);
+	}
+
+	/**
 	 * Deletes a patriot from a specific member.
 	 * 
-	 * @param memberId The ID of the member.
+	 * @param memberId  The ID of the member.
 	 * @param patriotId The ID of the patriot to be deleted.
 	 */
 	@DeleteMapping("/{memberId}/patriot/{patriotId}")
@@ -264,7 +270,7 @@ public class MemberController {
 	/**
 	 * Deletes an chapter from a specific member.
 	 * 
-	 * @param memberId The ID of the member.
+	 * @param memberId  The ID of the member.
 	 * @param chapterId The ID of the chapter to be deleted.
 	 */
 	@DeleteMapping("/{memberId}/chapter/{chapterId}")
@@ -273,4 +279,35 @@ public class MemberController {
 		log.info("Deleting chapter with ID={} from member with ID={}", chapterId, memberId);
 		memberService.deleteChapter(memberId, chapterId);
 	}
+
+	@DeleteMapping("/chapter/{chapterId}")
+	public ResponseEntity<Map<String, String>> deleteChapterById(@PathVariable Long chapterId) {
+		log.info("Deleting chapter with ID={}", chapterId);
+		memberService.deleteChapterById(chapterId);
+
+		// Create a response message
+		Map<String, String> response = new HashMap<>();
+		response.put("message", "Chapter has been successfully deleted.");
+
+		return ResponseEntity.ok(response);
+	}
+
+	@DeleteMapping("/chapters")
+	public void deleteAllChapters() {
+		log.warn("Attempting to delete all chapters.");
+		throw new UnsupportedOperationException("Deleting all chapters is not allowed.");
+	}
+
+	@DeleteMapping("/patriots")
+	public void deleteAllPatriots() {
+		log.warn("Attempting to delete all Patriots.");
+		throw new UnsupportedOperationException("Deleting all Patriots is not allowed.");
+	}
+
+	@DeleteMapping
+	public void deleteAllMembers() {
+		log.warn("Attempting to delete all members.");
+		throw new UnsupportedOperationException("Deleting all members is not allowed.");
+	}
+
 }
