@@ -9,12 +9,16 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 @Entity // Marks this class as a JPA entity, meaning it will be mapped to a database table
 @Data // Lombok annotation to generate boilerplate code like getters, setters, and toString()
+@Table(name = "patriot", uniqueConstraints = @UniqueConstraint(
+	    columnNames = {"patriot_first_name", "patriot_last_name", "patriot_rank_service", "patriot_state"}))
 public class Patriot { 
 
     @Id // Specifies the primary key for the entity

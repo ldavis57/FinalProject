@@ -34,11 +34,9 @@ public class Member {
 	private String memberEmail;
 
 	@JsonProperty("memberBirthday") // ✅ Ensures JSON mapping
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
 	private LocalDate memberBirthday;
 
 	@JsonProperty("memberJoinDate") // ✅ Ensures JSON mapping
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
 	private LocalDate memberJoinDate;
 
 	/**
@@ -58,8 +56,8 @@ public class Member {
 	 * cascaded to Chapter. orphanRemoval = true means that if a Chapter is removed
 	 * from this set, it is deleted from the database.
 	 */
-	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-	@EqualsAndHashCode.Exclude // ✅ Prevents infinite loops in bidirectional relationships
-	@ToString.Exclude // ✅ Prevents infinite loops when printing objects
-	private Set<Chapter> chapter = new HashSet<>();
+	@ManyToOne
+	@JoinColumn(name = "chapter_id", nullable = true)
+	private Chapter chapter;
+
 }

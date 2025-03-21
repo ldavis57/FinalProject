@@ -1,5 +1,7 @@
 package dar.member.dao;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import dar.member.entity.Patriot;
@@ -10,5 +12,10 @@ import dar.member.entity.Patriot;
  * like save, findById, findAll, deleteById, etc.
  */
 public interface PatriotDao extends JpaRepository<Patriot, Long> {
+	Optional<Patriot> findByPatriotFirstNameAndPatriotLastNameAndPatriotRankServiceAndPatriotState(
+		    String patriotFirstName,
+		    String patriotLastName,
+		    String patriotRankService,
+		    String patriotState);
 }
 

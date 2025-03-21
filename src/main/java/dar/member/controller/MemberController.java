@@ -64,10 +64,8 @@ public class MemberController {
 	 */
 	@PostMapping("/{memberId}/chapter")
 	@ResponseStatus(code = HttpStatus.CREATED) // Returns HTTP 201 Created on success
-	public MemberChapter addChapterToMember(@PathVariable Long memberId, @RequestBody MemberChapter memberChapter) { // @RequestBody:
-																														// body
-																														// is
-																														// json
+	// @RequestBody: is json
+	public MemberChapter addChapterToMember(@PathVariable Long memberId, @RequestBody MemberChapter memberChapter) {
 		log.info("Adding chapter {} to member with ID={}", memberChapter, memberId);
 		return memberService.saveChapter(memberId, memberChapter);
 	}
@@ -137,10 +135,14 @@ public class MemberController {
 		return memberService.updateUnassignedChapter(chapterId, memberChapter);
 	}
 
-	@PutMapping("/{memberId}/chapter/{chapterId}/assign")
-	public MemberChapter assignChapterToMember(@PathVariable Long memberId, @PathVariable Long chapterId) {
-		log.info("Assigning chapter with ID={} to member with ID={}", chapterId, memberId);
-		return memberService.assignChapterToMember(memberId, chapterId);
+	@PutMapping("/patriot/{patriotId}")
+	public ResponseEntity<MemberPatriot> updateUnassignedPatriot(@PathVariable Long patriotId,
+			@RequestBody MemberPatriot memberPatriot) {
+
+		log.info("Updating Patriot with ID={}", patriotId);
+
+		MemberPatriot updated = memberService.updateUnassignedPatriot(patriotId, memberPatriot);
+		return ResponseEntity.ok(updated); // ✅ this now matches the return type
 	}
 
 	/**
@@ -177,7 +179,7 @@ public class MemberController {
 	 * @return A list of chapter working in the specified member.
 	 */
 	@GetMapping("/{memberId}/chapter")
-	public List<MemberChapter> getChapterForMember(@PathVariable Long memberId) {
+	public MemberChapter getChapterForMember(@PathVariable Long memberId) {
 		log.info("Retrieving chapter for member with ID={}", memberId);
 		return memberService.getChapterByMemberId(memberId);
 	}
@@ -223,7 +225,7 @@ public class MemberController {
 	 * 
 	 * @return A list of all patriot in all members.
 	 */
-	@GetMapping("/patriot")
+	@GetMapping("/patriots")
 	public List<MemberPatriot> getAllPatriots() {
 		log.info("Retrieving all patriots across all members");
 		return memberService.getAllPatriots();
@@ -248,10 +250,11 @@ public class MemberController {
 	 * @param memberId The ID of the member to be deleted.
 	 */
 	@DeleteMapping("/{memberId}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteMemberById(@PathVariable Long memberId) {
+	public ResponseEntity<String> deleteMemberById(@PathVariable Long memberId) {
 		log.info("Deleting member with ID={}", memberId);
-		memberService.deleteMember(memberId);
+
+		String resultMessage = memberService.deleteMember(memberId);
+		return ResponseEntity.ok(resultMessage);
 	}
 
 	/**
@@ -308,6 +311,21 @@ public class MemberController {
 	public void deleteAllMembers() {
 		log.warn("Attempting to delete all members.");
 		throw new UnsupportedOperationException("Deleting all members is not allowed.");
+	}
+	
+	@PutMapping("/{memberId}/chapter/{chapterId}/assign")
+	public MemberChapter assignChapterToMember(@PathVariable Long memberId, @PathVariable Long chapterId) {
+		log.info("Assigning chapter with ID={} to member with ID={}", chapterId, memberId);
+		return memberService.assignChapterToMember(memberId, chapterId);
+	}
+
+	@PutMapping("/{memberId}/patriots/{patriotId}")
+	public ResponseEntity<MemberPatriot> assignPatriot(
+	        @PathVariable Long memberId,
+	        @PathVariable Long patriotId) {
+	    
+	    MemberPatriot result = memberService.assignPatriotToMember(memberId, patriotId);
+	    return ResponseEntity.ok(result);
 	}
 
 }
