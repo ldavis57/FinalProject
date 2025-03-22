@@ -22,6 +22,7 @@ import dar.member.dao.MemberDao;
 import dar.member.entity.Patriot;
 import dar.member.entity.Chapter;
 import dar.member.entity.Member;
+import dar.member.controller.model.PatriotAssignmentResult;
 
 /**
  * Service layer for managing member operations. Provides methods for creating,
@@ -82,24 +83,25 @@ public class MemberService {
 		chapter.setChapterNumber(memberChapter.getChapterNumber());
 	}
 
+	@Transactional
+	public MemberChapter updateChapter(Long memberId, Long chapterId, MemberChapter memberChapter) {
+		Chapter chapter = findChapterById(memberId, chapterId); // Ensures the chapter exists
+	
+		// Update fields
+		chapter.setChapterName(memberChapter.getChapterName());
+		chapter.setChapterNumber(memberChapter.getChapterNumber());
+	
+		Chapter updatedChapter = chapterDao.save(chapter);
+		return new MemberChapter(updatedChapter);
+	}
+
+	@Transactional
 	private void copyPatriotFields(Patriot patriot, MemberPatriot memberPatriot) {
 		patriot.setPatriotId(memberPatriot.getPatriotId());
 		patriot.setPatriotFirstName(memberPatriot.getPatriotFirstName()); // Stores the patriot's first name
 		patriot.setPatriotLastName(memberPatriot.getPatriotLastName()); // Stores the patriot's last name
 		patriot.setPatriotState(memberPatriot.getPatriotState()); // Stores the patriot's email address
 		patriot.setPatriotRankService(memberPatriot.getPatriotRankService()); // Stores the patriot's email address
-	}
-
-	@Transactional
-	public MemberChapter updateChapter(Long memberId, Long chapterId, MemberChapter memberChapter) {
-		Chapter chapter = findChapterById(memberId, chapterId); // Ensures the chapter exists
-
-		// Update fields
-		chapter.setChapterName(memberChapter.getChapterName());
-		chapter.setChapterNumber(memberChapter.getChapterNumber());
-
-		Chapter updatedChapter = chapterDao.save(chapter);
-		return new MemberChapter(updatedChapter);
 	}
 
 	@Transactional
@@ -323,30 +325,44 @@ public class MemberService {
 	}
 
 	@Transactional
-	public MemberPatriot savePatriot(Long memberId, MemberPatriot memberPatriot) {
-	    // Check for existing patriot
-	    Optional<Patriot> existing = patriotDao.findByPatriotFirstNameAndPatriotLastNameAndPatriotRankServiceAndPatriotState(
+	public PatriotAssignmentResult savePatriot(Long memberId, MemberPatriot memberPatriot) {
+	    Member member = findMemberById(memberId);
+
+	    Optional<Patriot> existing = patriotDao.findMatchingPatriotIgnoreCase(
 	        memberPatriot.getPatriotFirstName(),
 	        memberPatriot.getPatriotLastName(),
 	        memberPatriot.getPatriotRankService(),
 	        memberPatriot.getPatriotState()
 	    );
 
+	    Patriot patriot;
+	    String message;
+
 	    if (existing.isPresent()) {
-	        throw new ResponseStatusException(HttpStatus.CONFLICT, "Patriot already exists.");
+	        patriot = existing.get();
+
+	        // Only assign if not already assigned
+	        if (!member.getPatriot().contains(patriot)) {
+	            member.getPatriot().add(patriot);
+	            patriot.getMember().add(member);
+	            memberDao.save(member);
+	        }
+
+	        message = "Existing patriot assigned";
+	    } else {
+	        // Create new patriot and assign
+	        patriot = new Patriot();
+	        copyPatriotFields(patriot, memberPatriot);
+
+	        patriot.getMember().add(member);
+	        member.getPatriot().add(patriot);
+
+	        patriotDao.save(patriot);
+
+	        message = "New patriot created";
 	    }
 
-	    // If no match, create new patriot
-	    Patriot patriot = new Patriot();
-	    copyPatriotFields(patriot, memberPatriot);
-
-	    // Optional: assign to member here if needed
-	    Member member = findMemberById(memberId);
-	    member.getPatriot().add(patriot);
-	    patriot.getMember().add(member);
-
-	    patriotDao.save(patriot);
-	    return new MemberPatriot(patriot);
+	    return new PatriotAssignmentResult(message, new MemberPatriot(patriot));
 	}
 
 	@Transactional(readOnly = true)
@@ -521,5 +537,18 @@ public class MemberService {
 	    memberDao.save(member); // Persist relationship
 	    return new MemberPatriot(patriot); // DTO or confirmation response
 	}
+	
+	@Transactional(readOnly = true)
+	public List<MemberPatriot> getUnassignedPatriots() {
+	    List<Patriot> unassigned = patriotDao.findAllUnassignedPatriots();
+	    List<MemberPatriot> dtoList = new ArrayList<>();
+
+	    for (Patriot patriot : unassigned) {
+	        dtoList.add(new MemberPatriot(patriot));
+	    }
+
+	    return dtoList;
+	}
+
 
 }
