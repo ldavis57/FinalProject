@@ -30,10 +30,10 @@ public class MemberData {
 	private String memberPhone;
 	private String memberEmail;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy") // ✅ Ensures correct JSON format
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") // ✅ Ensures correct JSON format
 	private LocalDate memberBirthday;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate memberJoinDate;
 
 	private String memberOffice;

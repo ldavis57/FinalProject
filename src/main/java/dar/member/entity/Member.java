@@ -34,9 +34,11 @@ public class Member {
 	private String memberEmail;
 
 	@JsonProperty("memberBirthday") // ✅ Ensures JSON mapping
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate memberBirthday;
 
 	@JsonProperty("memberJoinDate") // ✅ Ensures JSON mapping
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate memberJoinDate;
 
 	/**
