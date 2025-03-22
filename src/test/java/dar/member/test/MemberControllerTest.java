@@ -1,93 +1,96 @@
 package dar.member.test;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.NoSuchElementException;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dar.member.controller.MemberController;
 import dar.member.controller.model.MemberData;
+import dar.member.controller.model.MemberData.MemberChapter;
 import dar.member.controller.model.MemberData.MemberPatriot;
+import dar.member.controller.model.PatriotAssignmentResult;
 import dar.member.service.MemberService;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
-@ExtendWith(MockitoExtension.class)
-class MemberControllerTest {
+import java.util.Collections;
 
-    @Mock
+import static org.mockito.ArgumentMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(MemberController.class)
+public class MemberControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private MemberService memberService;
 
-    @InjectMocks
-    private MemberController memberController;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    private MockMvc mockMvc;
-    private MemberData memberData;
-    private MemberPatriot memberPatriot;
-
-    @BeforeEach
-    void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(memberController).build();
-
-        memberData = new MemberData();
+    @Test
+    void createMember_shouldReturnCreatedMember() throws Exception {
+        MemberData memberData = new MemberData();
         memberData.setMemberId(1L);
-        memberData.setMemberFirstName("John");
-        memberData.setMemberLastName("Doe");
+        memberData.setMemberFirstName("George");
 
-        memberPatriot = new MemberPatriot();
-        memberPatriot.setPatriotId(1L);
-        memberPatriot.setPatriotFirstName("George");
-        memberPatriot.setPatriotLastName("Washington");
-        memberPatriot.setPatriotState("Virginia");
-    }
+        Mockito.when(memberService.saveMember(any(MemberData.class))).thenReturn(memberData);
 
-    @Test
-    void createMember_ShouldReturnCreatedMember() throws Exception {
-        when(memberService.saveMember(any(MemberData.class))).thenReturn(memberData);
-
-        mockMvc.perform(post("/dar_member")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{ \"memberFirstName\": \"John\", \"memberLastName\": \"Doe\" }"))
+        mockMvc.perform(post("/dar_members")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(memberData)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.memberFirstName").value("John"));
+                .andExpect(jsonPath("$.memberId").value(1L))
+                .andExpect(jsonPath("$.memberFirstName").value("George"));
     }
 
     @Test
-    void retrieveMemberById_ShouldReturnMember() throws Exception {
-        when(memberService.retrieveMemberById(1L)).thenReturn(memberData);
+    void retrieveAllMembers_shouldReturnList() throws Exception {
+        Mockito.when(memberService.retrieveAllmember()).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/dar_member/1"))
+        mockMvc.perform(get("/dar_members"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void deleteMember_shouldReturnConfirmationMessage() throws Exception {
+        Mockito.when(memberService.deleteMember(1L)).thenReturn("Member deleted successfully");
+
+        mockMvc.perform(delete("/dar_members/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.memberFirstName").value("John"));
+                .andExpect(content().string("Member deleted successfully"));
     }
 
     @Test
-    void retrieveMemberById_ShouldReturnNotFound() throws Exception {
-        when(memberService.retrieveMemberById(1L)).thenThrow(new NoSuchElementException("Not found"));
+    void addChapterToMember_shouldReturnChapter() throws Exception {
+        MemberChapter chapter = new MemberChapter();
+        chapter.setChapterId(100L);
+        Mockito.when(memberService.saveChapter(eq(1L), any(MemberChapter.class))).thenReturn(chapter);
 
-        mockMvc.perform(get("/dar_member/1"))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(post("/dar_members/1/chapter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(chapter)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.chapterId").value(100L));
     }
 
     @Test
-    void deleteMemberById_ShouldReturnNoContent() throws Exception {
-        doNothing().when(memberService).deleteMember(1L);
+    void addPatriotToMember_shouldReturnResult() throws Exception {
+        MemberPatriot patriot = new MemberPatriot();
+        PatriotAssignmentResult result = new PatriotAssignmentResult("Assigned", patriot);
 
-        mockMvc.perform(delete("/dar_member/1"))
-                .andExpect(status().isNoContent());
+        Mockito.when(memberService.savePatriot(eq(1L), any(MemberPatriot.class))).thenReturn(result);
+
+        mockMvc.perform(post("/dar_members/1/patriot")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patriot)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Assigned"));
     }
 }

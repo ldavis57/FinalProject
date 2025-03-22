@@ -57,6 +57,20 @@ public class MemberController {
 	}
 
 	/**
+	 * Creates a new patriot that is not initially assigned to any member.
+	 *
+	 * @param patriotDto The details of the patriot to create, received in the
+	 *                   request body.
+	 * @return The created patriot data wrapped in a MemberPatriot DTO.
+	 */
+	@PostMapping("/patriot")
+	@ResponseStatus(HttpStatus.CREATED)
+	public MemberPatriot createUnassignedPatriot(@RequestBody MemberPatriot patriotDto) {
+		log.info("Creating new unassigned patriot: {}", patriotDto);
+		return memberService.createUnassignedPatriot(patriotDto);
+	}
+
+	/**
 	 * Adds an chapter to a specific member.
 	 * 
 	 * @param memberId      The ID of the member.
@@ -80,22 +94,20 @@ public class MemberController {
 	 */
 	@PostMapping("/{memberId}/patriot")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	public PatriotAssignmentResult addPatriotToMember(
-	        @PathVariable Long memberId,
-	        @RequestBody MemberPatriot memberPatriot) {
+	public PatriotAssignmentResult addPatriotToMember(@PathVariable Long memberId,
+			@RequestBody MemberPatriot memberPatriot) {
 
-	    log.info("Adding patriot {} to member with ID={}", memberPatriot, memberId);
-	    return memberService.savePatriot(memberId, memberPatriot);
+		log.info("Adding patriot {} to member with ID={}", memberPatriot, memberId);
+		return memberService.savePatriot(memberId, memberPatriot);
 	}
-	
+
 	// Assigns a patriot to a member
 	@PutMapping("/members/{memberId}/patriots")
-	public ResponseEntity<PatriotAssignmentResult> savePatriot(
-	        @PathVariable Long memberId,
-	        @RequestBody MemberPatriot patriotDTO) {
-	
-	    PatriotAssignmentResult result = memberService.savePatriot(memberId, patriotDTO);
-	    return ResponseEntity.ok(result);
+	public ResponseEntity<PatriotAssignmentResult> savePatriot(@PathVariable Long memberId,
+			@RequestBody MemberPatriot patriotDTO) {
+
+		PatriotAssignmentResult result = memberService.savePatriot(memberId, patriotDTO);
+		return ResponseEntity.ok(result);
 	}
 
 	/**
@@ -128,6 +140,22 @@ public class MemberController {
 	}
 
 	/**
+	 * Updates the details of a chapter that is not currently assigned to any
+	 * member.
+	 *
+	 * @param chapterId     The ID of the unassigned chapter to update (from the URL
+	 *                      path).
+	 * @param memberChapter The updated chapter data received in the request body.
+	 * @return The updated chapter data wrapped in a MemberChapter DTO.
+	 */
+	@PutMapping("/chapter/{chapterId}")
+	public MemberChapter updateUnassignedChapter(@PathVariable Long chapterId,
+			@RequestBody MemberChapter memberChapter) { // allows updating an unassigned chapter
+		log.info("Updating chapter with ID={}", chapterId);
+		return memberService.updateUnassignedChapter(chapterId, memberChapter);
+	}
+
+	/**
 	 * Updates a patriot in a specific member.
 	 * 
 	 * @param memberId      The ID of the member.
@@ -141,14 +169,17 @@ public class MemberController {
 		log.info("Updating patriot with ID={} for member with ID={}", patriotId, memberId);
 		return memberService.updatePatriot(memberId, patriotId, memberPatriot);
 	}
-	
-	@PutMapping("/chapter/{chapterId}")
-	public MemberChapter updateUnassignedChapter(@PathVariable Long chapterId,
-			@RequestBody MemberChapter memberChapter) { // allows updating an unassigned chapter
-		log.info("Updating chapter with ID={}", chapterId);
-		return memberService.updateUnassignedChapter(chapterId, memberChapter);
-	}
 
+	/**
+	 * Updates the details of a patriot that is not currently assigned to any
+	 * member.
+	 *
+	 * @param patriotId     The ID of the unassigned patriot to update (from the URL
+	 *                      path).
+	 * @param memberPatriot The updated patriot data received in the request body.
+	 * @return A ResponseEntity containing the updated patriot data wrapped in a
+	 *         MemberPatriot DTO.
+	 */
 	@PutMapping("/patriot/{patriotId}")
 	public ResponseEntity<MemberPatriot> updateUnassignedPatriot(@PathVariable Long patriotId,
 			@RequestBody MemberPatriot memberPatriot) {
@@ -258,10 +289,15 @@ public class MemberController {
 		return memberService.getPatriotById(memberId, patriotId);
 	}
 
+	/**
+	 * Retrieves all patriots that are not currently assigned to any member.
+	 *
+	 * @return A list of unassigned patriots, each wrapped in a MemberPatriot DTO.
+	 */
 	@GetMapping("/patriots/unassigned") // get all unassigned Patriots
 	public List<MemberPatriot> getUnassignedPatriots() {
-	    log.info("Retrieving all unassigned patriots.");
-	    return memberService.getUnassignedPatriots();
+		log.info("Retrieving all unassigned patriots.");
+		return memberService.getUnassignedPatriots();
 	}
 
 	/**
@@ -290,6 +326,13 @@ public class MemberController {
 		memberService.deletePatriot(memberId, patriotId);
 	}
 
+	@DeleteMapping("/patriot/{patriotId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteUnassignedPatriot(@PathVariable Long patriotId) {
+		log.info("Deleting unassigned patriot with ID={}", patriotId);
+		memberService.deleteUnassignedPatriot(patriotId);
+	}
+
 	/**
 	 * Deletes an chapter from a specific member.
 	 * 
@@ -303,49 +346,41 @@ public class MemberController {
 		memberService.deleteChapter(memberId, chapterId);
 	}
 
+	/**
+	 * Deletes a chapter by its ID.
+	 *
+	 * @param chapterId The ID of the chapter to delete.
+	 * @return A confirmation message in a JSON response.
+	 */
 	@DeleteMapping("/chapter/{chapterId}")
 	public ResponseEntity<Map<String, String>> deleteChapterById(@PathVariable Long chapterId) {
-		log.info("Deleting chapter with ID={}", chapterId);
-		memberService.deleteChapterById(chapterId);
+		log.info("Deleting chapter with ID={}", chapterId); // Log the deletion
+		memberService.deleteChapterById(chapterId); // Delegate to service layer
 
 		// Create a response message
 		Map<String, String> response = new HashMap<>();
 		response.put("message", "Chapter has been successfully deleted.");
 
-		return ResponseEntity.ok(response);
+		return ResponseEntity.ok(response); // Return HTTP 200 with message
 	}
 
+	/**
+	 * Prevents deletion of all chapters at once. Throws an exception if the
+	 * endpoint is called.
+	 */
 	@DeleteMapping("/chapters")
-	public void deleteAllChapters() { // prohibits deleting all chapters
-		log.warn("Attempting to delete all chapters.");
+	public void deleteAllChapters() {
+		log.warn("Attempting to delete all chapters."); // Log the prohibited action
 		throw new UnsupportedOperationException("Deleting all chapters is not allowed.");
 	}
 
+	/**
+	 * Prevents deletion of all patriots at once. Throws an exception if the
+	 * endpoint is called.
+	 */
 	@DeleteMapping("/patriots")
-	public void deleteAllPatriots() { // prohibits deleting all patriots
-		log.warn("Attempting to delete all Patriots.");
+	public void deleteAllPatriots() {
+		log.warn("Attempting to delete all Patriots."); // Log the prohibited action
 		throw new UnsupportedOperationException("Deleting all Patriots is not allowed.");
 	}
-
-	@DeleteMapping
-	public void deleteAllMembers() { // prohibit deleting all members
-		log.warn("Attempting to delete all members.");
-		throw new UnsupportedOperationException("Deleting all members is not allowed.");
-	}
-	
-	@PutMapping("/{memberId}/chapter/{chapterId}/assign") // assign chapter to member by chapter ID
-	public MemberChapter assignChapterToMember(@PathVariable Long memberId, @PathVariable Long chapterId) {
-		log.info("Assigning chapter with ID={} to member with ID={}", chapterId, memberId);
-		return memberService.assignChapterToMember(memberId, chapterId);
-	}
-
-	@PutMapping("/{memberId}/patriots/{patriotId}") // update Patriot by ID
-	public ResponseEntity<MemberPatriot> assignPatriot(
-	        @PathVariable Long memberId,
-	        @PathVariable Long patriotId) {
-	    
-	    MemberPatriot result = memberService.assignPatriotToMember(memberId, patriotId);
-	    return ResponseEntity.ok(result);
-	}
-
 }
