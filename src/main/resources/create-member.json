@@ -8,7 +8,7 @@
     "memberZip": "48910",
     "memberPhone": "517-555-1001",
     "memberOffice": "Regent",
-    "memberEmail": "ava.bennett@example.com",
+    "memberEmail": "ava.bennett@gmail.com",
     "memberJoinDate": "2021-05-12",
     "memberBirthday": "1987-03-22"
   },
@@ -21,7 +21,7 @@
     "memberZip": "49503",
     "memberPhone": "616-555-2345",
     "memberOffice": "Vice Regent",
-    "memberEmail": "emma.collins@example.com",
+    "memberEmail": "emma.collins@gmail.com",
     "memberJoinDate": "2020-09-18",
     "memberBirthday": "1990-06-10"
   },
@@ -34,7 +34,7 @@
     "memberZip": "48104",
     "memberPhone": "734-555-3456",
     "memberOffice": "",
-    "memberEmail": "luna.morris@example.com",
+    "memberEmail": "luna.morris@gmail.com",
     "memberJoinDate": "2022-02-05",
     "memberBirthday": "1985-11-30"
   },
@@ -47,7 +47,7 @@
     "memberZip": "48502",
     "memberPhone": "810-555-4567",
     "memberOffice": "Treasurer",
-    "memberEmail": "zoe.patterson@example.com",
+    "memberEmail": "zoe.patterson@gmail.com",
     "memberJoinDate": "2019-07-22",
     "memberBirthday": "1992-09-17"
   },
@@ -60,7 +60,7 @@
     "memberZip": "48201",
     "memberPhone": "313-555-5678",
     "memberOffice": "",
-    "memberEmail": "natalie.price@example.com",
+    "memberEmail": "natalie.price@gmail.com",
     "memberJoinDate": "2023-01-15",
     "memberBirthday": "1988-12-03"
   },
@@ -73,7 +73,7 @@
     "memberZip": "48640",
     "memberPhone": "989-555-6789",
     "memberOffice": "Corresponding Secretary",
-    "memberEmail": "hazel.simmons@example.com",
+    "memberEmail": "hazel.simmons@gmail.com",
     "memberJoinDate": "2020-04-20",
     "memberBirthday": "1994-02-14"
   },
@@ -86,7 +86,7 @@
     "memberZip": "48033",
     "memberPhone": "248-555-7890",
     "memberOffice": "",
-    "memberEmail": "isla.wells@example.com",
+    "memberEmail": "isla.wells@gmail.com",
     "memberJoinDate": "2022-10-01",
     "memberBirthday": "1991-04-09"
   },
@@ -99,7 +99,7 @@
     "memberZip": "48150",
     "memberPhone": "734-555-8901",
     "memberOffice": "Historian",
-    "memberEmail": "ellie.foster@example.com",
+    "memberEmail": "ellie.foster@gmail.com",
     "memberJoinDate": "2021-11-11",
     "memberBirthday": "1986-07-25"
   },
@@ -112,7 +112,7 @@
     "memberZip": "48375",
     "memberPhone": "248-555-9012",
     "memberOffice": "",
-    "memberEmail": "stella.griffin@example.com",
+    "memberEmail": "stella.griffin@gmail.com",
     "memberJoinDate": "2020-06-30",
     "memberBirthday": "1995-08-12"
   },
@@ -125,7 +125,7 @@
     "memberZip": "48089",
     "memberPhone": "586-555-0123",
     "memberOffice": "Recording Secretary",
-    "memberEmail": "aurora.lane@example.com",
+    "memberEmail": "aurora.lane@gmail.com",
     "memberJoinDate": "2023-03-08",
     "memberBirthday": "1993-10-01"
   }

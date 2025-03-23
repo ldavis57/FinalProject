@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Entry point of the Pet Store application. This class is responsible for
+ * Entry point of the DAR members application. This class is responsible for
  * bootstrapping the Spring Boot application.
  */
 @SpringBootApplication

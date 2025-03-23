@@ -5,12 +5,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+
+import dar.member.entity.Chapter;
+import dar.member.entity.Member;
+import dar.member.entity.Patriot;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import dar.member.entity.Patriot;
-import dar.member.entity.Chapter;
-import dar.member.entity.Member;
 
 /**
  * DTO (Data Transfer Object) for Member entity. Encapsulates member details

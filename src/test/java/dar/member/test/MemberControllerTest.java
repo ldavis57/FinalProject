@@ -33,6 +33,7 @@ public class MemberControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
+	@SuppressWarnings("removal")
 	@MockBean
 	private MemberService memberService;
 

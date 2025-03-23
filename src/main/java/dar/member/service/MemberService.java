@@ -203,22 +203,6 @@ public class MemberService {
 	}
 
 	/**
-	 * Finds an existing chapter by ID if present; otherwise, creates a new Chapter
-	 * instance. Used during chapter assignment to determine whether to reuse or
-	 * create a chapter.
-	 *
-	 * @param memberId  The ID of the member (used for validation).
-	 * @param chapterId The ID of the chapter to find.
-	 * @return An existing Chapter entity or a new blank Chapter instance.
-	 */
-	private Chapter findOrCreateChapter(Long memberId, Long chapterId) {
-		if (Objects.isNull(chapterId)) {
-			return new Chapter();
-		}
-		return findChapterById(memberId, chapterId);
-	}
-
-	/**
 	 * Finds an existing member by ID if present.
 	 * 
 	 * @param memberId
@@ -230,21 +214,28 @@ public class MemberService {
 	}
 
 	/**
-	 * Finds chapter for a member by chapterID
+	 * Finds chapter for a member by chapterID.
+	 * If member is already assigned, return message saying same.
 	 * 
 	 * @param memberId
 	 * @param chapterId
 	 * @return
 	 */
 	private Chapter findChapterById(Long memberId, Long chapterId) {
+		Member member = memberDao.findById(memberId)
+			.orElseThrow(() -> new NoSuchElementException("Member with ID=" + memberId + " was not found."));
+
 		Chapter chapter = chapterDao.findById(chapterId)
-				.orElseThrow(() -> new NoSuchElementException("Chapter with ID=" + chapterId + " was not found."));
+			.orElseThrow(() -> new NoSuchElementException("Chapter with ID=" + chapterId + " was not found."));
 
-		boolean found = chapter.getMembers().stream().anyMatch(member -> member.getMemberId().equals(memberId));
+		// If the member has no chapter
+		if (member.getChapter() == null) {
+			throw new IllegalArgumentException("Member " + memberId + " is not assigned to any chapter.");
+		}
 
-		if (!found) {
-			throw new IllegalArgumentException(
-					"The chapter with ID=" + chapterId + " is not associated with member ID=" + memberId + ".");
+		// If the chapter doesn't match the one assigned to the member
+		if (!member.getChapter().getChapterId().equals(chapterId)) {
+			throw new IllegalArgumentException("Member " + memberId + " is already assigned to a different chapter.");
 		}
 
 		return chapter;
@@ -259,23 +250,23 @@ public class MemberService {
 	 * @return
 	 */
 	private Patriot findPatriotById(Long memberId, Long patriotId) {
-		Patriot patriot = patriotDao.findById(patriotId)
-				.orElseThrow(() -> new NoSuchElementException("Patriot with ID=" + patriotId + " was not found."));
+	    Patriot patriot = patriotDao.findById(patriotId)
+	        .orElseThrow(() -> new ResponseStatusException(
+	            HttpStatus.NOT_FOUND,
+	            "Patriot with ID=" + patriotId + " was not found."
+	        ));
 
-		boolean found = false;
+	    boolean found = patriot.getMember().stream()
+	        .anyMatch(member -> member.getMemberId().equals(memberId));
 
-		for (Member member : patriot.getMember()) {
-			if (member.getMemberId().equals(memberId)) {
-				found = true;
-				break;
-			}
-		}
-		if (!found) {
-			throw new IllegalArgumentException(
-					"The patriot with ID=" + patriotId + " is not a patriot of the member with ID=" + memberId);
-		}
+	    if (!found) {
+	        throw new ResponseStatusException(
+	            HttpStatus.BAD_REQUEST,
+	            "Patriot with ID=" + patriotId + " is not a patriot of the member with ID=" + memberId
+	        );
+	    }
 
-		return patriot;
+	    return patriot;
 	}
 
 	/**
@@ -567,12 +558,17 @@ public class MemberService {
 		memberDao.delete(member);
 
 		if (isOnlyMemberInChapter) {
-			chapterDao.delete(chapter);
-			message = String.format("Member with ID=%d was deleted. Chapter '%s' (ID=%d) was also deleted", memberId,
-					chapter.getChapterName(), chapter.getChapterId());
+		    chapterDao.delete(chapter);
+		    message = String.format("Member with ID=%d was deleted. Chapter '%s' (ID=%d) was also deleted",
+		        memberId, chapter.getChapterName(), chapter.getChapterId());
+		} else if (chapter != null) {
+		    message = String.format(
+		        "Member with ID=%d was deleted. Chapter '%s' (ID=%d) is assigned to other members so was not deleted.",
+		        memberId, chapter.getChapterName(), chapter.getChapterId());
 		} else {
-			message = String.format("Member with ID=%d was deleted. No chapter was assigned.", memberId);
+		    message = String.format("Member with ID=%d was deleted. No chapter was assigned.", memberId);
 		}
+
 
 		return message;
 	}
@@ -621,16 +617,16 @@ public class MemberService {
 		Patriot patriot = patriotDao.findById(patriotId)
 				.orElseThrow(() -> new NoSuchElementException("Patriot with ID=" + patriotId + " not found"));
 
-		// ✅ Remove patriot from member
+		// Remove patriot from member
 		member.getPatriot().remove(patriot);
 
-		// ✅ Remove member from patriot
+		// Remove member from patriot
 		patriot.getMember().remove(member);
 
 		memberDao.save(member); // persist unlinking
 		patriotDao.save(patriot); // persist unlinking
 
-		// ✅ Only delete patriot if it's no longer linked to anyone
+		// Only delete patriot if it's no longer linked to anyone
 		if (patriot.getMember().isEmpty()) {
 			patriotDao.delete(patriot);
 			return "Patriot ID=" + patriotId + " was successfully deleted.";

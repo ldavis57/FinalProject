@@ -1,6 +1,7 @@
 package dar.member.dao;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import dar.member.entity.Member;
 
 /**

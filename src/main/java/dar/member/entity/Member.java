@@ -3,10 +3,19 @@ package dar.member.entity;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -33,11 +42,11 @@ public class Member {
 	private String memberOffice;
 	private String memberEmail;
 
-	@JsonProperty("memberBirthday") // ✅ Ensures JSON mapping
+	@JsonProperty("memberBirthday") // Ensures JSON mapping
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate memberBirthday;
 
-	@JsonProperty("memberJoinDate") // ✅ Ensures JSON mapping
+	@JsonProperty("memberJoinDate") // Ensures JSON mapping
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate memberJoinDate;
 

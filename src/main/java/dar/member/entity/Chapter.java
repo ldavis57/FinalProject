@@ -11,7 +11,7 @@ import jakarta.persistence.OneToMany;
 import lombok.Data;
 
 /**
- * Represents an Chapter entity in the pet store system. This class is mapped
+ * Represents an Chapter entity in member. This class is mapped
  * to a database table using JPA annotations.
  */
 @Entity // Marks this class as a JPA entity, mapping it to a database table

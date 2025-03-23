@@ -19,13 +19,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import lombok.extern.slf4j.Slf4j;
 import dar.member.controller.model.ChapterAssignmentResult;
 import dar.member.controller.model.MemberData;
+import dar.member.controller.model.MemberData.MemberChapter;
 import dar.member.controller.model.MemberData.MemberPatriot;
 import dar.member.controller.model.PatriotAssignmentResult;
-import dar.member.controller.model.MemberData.MemberChapter;
 import dar.member.service.MemberService;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * REST Controller to manage member operations. Provides endpoints to create,
@@ -102,7 +102,13 @@ public class MemberController {
 		return memberService.savePatriot(memberId, memberPatriot);
 	}
 
-	// Assigns a patriot to a member
+	/**
+	 * Saves new or assigns existing patriot to member
+	 * 
+	 * @param memberId
+	 * @param patriotDTO
+	 * @return
+	 */
 	@PutMapping("/members/{memberId}/patriot")
 	public ResponseEntity<PatriotAssignmentResult> savePatriot(@PathVariable Long memberId,
 			@RequestBody MemberPatriot patriotDTO) {
@@ -112,7 +118,7 @@ public class MemberController {
 	}
 
 	/**
-	 * Updates a patriot in a specific member.
+	 * Assigns existing patriot to a specific member.
 	 * 
 	 * @param memberId      The ID of the member.
 	 * @param patriotId     The ID of the patriot to be updated.
@@ -124,13 +130,6 @@ public class MemberController {
 		MemberPatriot result = memberService.assignPatriotToMember(memberId, patriotId);
 		return ResponseEntity.ok(result);
 	}
-
-//	@PutMapping("/{memberId}/patriot/{patriotId}")
-//	public MemberPatriot updatePatriot(@PathVariable Long memberId, @PathVariable Long patriotId,
-//			@RequestBody MemberPatriot memberPatriot) {
-//		log.info("Updating patriot with ID={} for member with ID={}", patriotId, memberId);
-//		return memberService.updatePatriot(memberId, patriotId, memberPatriot);
-//	}
 
 	/**
 	 * Updates an existing member by ID.
@@ -261,7 +260,7 @@ public class MemberController {
 	}
 
 	/**
-	 * Retrieves all patriot for a specific member.
+	 * Retrieves all patriots for a specific member.
 	 * 
 	 * @param memberId The ID of the member.
 	 * @return A list of patriot associated with the specified member.
