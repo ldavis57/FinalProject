@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import dar.member.controller.model.ChapterAssignmentResult;
 import dar.member.controller.model.MemberData;
 import dar.member.controller.model.MemberData.MemberChapter;
 import dar.member.controller.model.MemberData.MemberPatriot;
@@ -271,7 +272,7 @@ public class MemberService {
 		}
 		if (!found) {
 			throw new IllegalArgumentException(
-					"The patriot with ID=" + patriotId + " is not a member of the member with ID=" + memberId);
+					"The patriot with ID=" + patriotId + " is not a patriot of the member with ID=" + memberId);
 		}
 
 		return patriot;
@@ -325,31 +326,34 @@ public class MemberService {
 	 * @param memberChapter
 	 * @return
 	 */
-	@Transactional(readOnly = false)
-	public MemberChapter saveChapter(Long memberId, MemberChapter memberChapter) {
-		try {
-			Member member = findMemberById(memberId);
+	@Transactional
+	public ChapterAssignmentResult saveChapter(Long memberId, MemberChapter memberChapter) {
+		Member member = findMemberById(memberId);
 
-			// ✅ Prevent multiple chapters per member
-			if (member.getChapter() != null) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-						"This member is already assigned to a chapter.");
-			}
-
-			Long chapterId = memberChapter.getChapterId();
-			Chapter chapter = findOrCreateChapter(memberId, chapterId);
-
-			copyChapterFields(chapter, memberChapter);
-
-			// ✅ Assign the chapter to the member
-			member.setChapter(chapter);
-
-			Chapter dbChapter = chapterDao.save(chapter);
-			return new MemberChapter(dbChapter);
-
-		} catch (NoSuchElementException e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "member not found with ID=" + memberId, e);
+		if (member.getChapter() != null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This member is already assigned to a chapter.");
 		}
+
+		List<Chapter> matches = chapterDao.findByChapterNameIgnoreCaseAndChapterNumberIgnoreCase(
+				memberChapter.getChapterName(), memberChapter.getChapterNumber());
+
+		Chapter chapter;
+		String message;
+
+		if (!matches.isEmpty()) {
+			chapter = matches.get(0);
+			message = "Existing chapter assigned to member.";
+		} else {
+			chapter = new Chapter();
+			copyChapterFields(chapter, memberChapter);
+			chapter = chapterDao.save(chapter);
+			message = "New chapter created and assigned to member.";
+		}
+
+		member.setChapter(chapter);
+		memberDao.save(member);
+
+		return new ChapterAssignmentResult(message, new MemberChapter(chapter));
 	}
 
 	/**
@@ -581,7 +585,7 @@ public class MemberService {
 	 * @param chapterId The ID of the chapter to delete.
 	 */
 	@Transactional
-	public void deleteChapter(Long memberId, Long chapterId) {
+	public String deleteChapter(Long memberId, Long chapterId) {
 		// Look up the chapter by ID
 		Chapter chapter = chapterDao.findById(chapterId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -597,6 +601,8 @@ public class MemberService {
 			member.setChapter(null);
 
 			chapterDao.delete(chapter); // Delete the chapter from the database
+
+			return "Chapter ID=" + chapterId + " has been deleted.";
 		} else {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 					"Chapter is assigned to other members and cannot be deleted.");
@@ -610,19 +616,27 @@ public class MemberService {
 	 * @param patriotId The ID of the patriot to delete.
 	 */
 	@Transactional
-	public void deletePatriot(Long memberId, Long patriotId) {
-		Patriot patriot = findPatriotById(memberId, patriotId); // Ensure the patriot exists
+	public String deletePatriot(Long memberId, Long patriotId) {
+		Member member = findMemberById(memberId);
+		Patriot patriot = patriotDao.findById(patriotId)
+				.orElseThrow(() -> new NoSuchElementException("Patriot with ID=" + patriotId + " not found"));
 
-		// Remove the patriot from the member's patriot list
-		for (Member member : patriot.getMember()) {
-			if (member.getMemberId().equals(memberId)) {
-				member.getPatriot().remove(patriot);
-				break;
-			}
+		// ✅ Remove patriot from member
+		member.getPatriot().remove(patriot);
+
+		// ✅ Remove member from patriot
+		patriot.getMember().remove(member);
+
+		memberDao.save(member); // persist unlinking
+		patriotDao.save(patriot); // persist unlinking
+
+		// ✅ Only delete patriot if it's no longer linked to anyone
+		if (patriot.getMember().isEmpty()) {
+			patriotDao.delete(patriot);
+			return "Patriot ID=" + patriotId + " was successfully deleted.";
+		} else {
+			return "Patriot was unlinked from member but still assigned elsewhere.";
 		}
-
-		// Delete the patriot from the database
-		patriotDao.deleteById(patriotId);
 	}
 
 	/**
@@ -632,7 +646,7 @@ public class MemberService {
 	 * @throws IllegalStateException if the patriot is assigned to any members.
 	 */
 	@Transactional
-	public void deleteUnassignedPatriot(Long patriotId) {
+	public String deleteUnassignedPatriot(Long patriotId) {
 		Patriot patriot = patriotDao.findById(patriotId)
 				.orElseThrow(() -> new NoSuchElementException("Patriot with ID=" + patriotId + " not found"));
 
@@ -641,6 +655,8 @@ public class MemberService {
 		}
 
 		patriotDao.delete(patriot);
+
+		return "Patriot ID=" + patriotId + " was successfully deleted.";
 	}
 
 	/**
@@ -699,13 +715,14 @@ public class MemberService {
 		Patriot patriot = patriotDao.findById(patriotId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patriot not found"));
 
-		// Link both sides of the relationship
-		member.getPatriot().add(patriot);
-		patriot.getMember().add(member);
+		// Prevent duplicate assignment
+		if (!member.getPatriot().contains(patriot)) {
+			member.getPatriot().add(patriot);
+			patriot.getMember().add(member);
+			memberDao.save(member);
+		}
 
-		memberDao.save(member); // Persist the relationship update
-
-		return new MemberPatriot(patriot); // Return DTO
+		return new MemberPatriot(patriot);
 	}
 
 	/**

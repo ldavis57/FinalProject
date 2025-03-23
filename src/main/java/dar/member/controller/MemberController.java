@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import lombok.extern.slf4j.Slf4j;
+import dar.member.controller.model.ChapterAssignmentResult;
 import dar.member.controller.model.MemberData;
 import dar.member.controller.model.MemberData.MemberPatriot;
 import dar.member.controller.model.PatriotAssignmentResult;
@@ -78,11 +79,11 @@ public class MemberController {
 	 * @return The added chapter data.
 	 */
 	@PostMapping("/{memberId}/chapter")
-	@ResponseStatus(code = HttpStatus.CREATED) // Returns HTTP 201 Created on success
-	// @RequestBody: is json
-	public MemberChapter addChapterToMember(@PathVariable Long memberId, @RequestBody MemberChapter memberChapter) {
+	@ResponseStatus(HttpStatus.CREATED)
+	public ChapterAssignmentResult addChapterToMember(@PathVariable Long memberId,
+			@RequestBody MemberChapter memberChapter) {
 		log.info("Adding chapter {} to member with ID={}", memberChapter, memberId);
-		return memberService.saveChapter(memberId, memberChapter);
+		return memberService.saveChapter(memberId, memberChapter); // ✅ Now matches return type
 	}
 
 	/**
@@ -102,13 +103,34 @@ public class MemberController {
 	}
 
 	// Assigns a patriot to a member
-	@PutMapping("/members/{memberId}/patriots")
+	@PutMapping("/members/{memberId}/patriot")
 	public ResponseEntity<PatriotAssignmentResult> savePatriot(@PathVariable Long memberId,
 			@RequestBody MemberPatriot patriotDTO) {
 
 		PatriotAssignmentResult result = memberService.savePatriot(memberId, patriotDTO);
 		return ResponseEntity.ok(result);
 	}
+
+	/**
+	 * Updates a patriot in a specific member.
+	 * 
+	 * @param memberId      The ID of the member.
+	 * @param patriotId     The ID of the patriot to be updated.
+	 * @param memberPatriot The updated patriot data.
+	 * @return The updated patriot data.
+	 */
+	@PutMapping("/{memberId}/patriot/{patriotId}")
+	public ResponseEntity<MemberPatriot> assignPatriot(@PathVariable Long memberId, @PathVariable Long patriotId) {
+		MemberPatriot result = memberService.assignPatriotToMember(memberId, patriotId);
+		return ResponseEntity.ok(result);
+	}
+
+//	@PutMapping("/{memberId}/patriot/{patriotId}")
+//	public MemberPatriot updatePatriot(@PathVariable Long memberId, @PathVariable Long patriotId,
+//			@RequestBody MemberPatriot memberPatriot) {
+//		log.info("Updating patriot with ID={} for member with ID={}", patriotId, memberId);
+//		return memberService.updatePatriot(memberId, patriotId, memberPatriot);
+//	}
 
 	/**
 	 * Updates an existing member by ID.
@@ -153,21 +175,6 @@ public class MemberController {
 			@RequestBody MemberChapter memberChapter) { // allows updating an unassigned chapter
 		log.info("Updating chapter with ID={}", chapterId);
 		return memberService.updateUnassignedChapter(chapterId, memberChapter);
-	}
-
-	/**
-	 * Updates a patriot in a specific member.
-	 * 
-	 * @param memberId      The ID of the member.
-	 * @param patriotId     The ID of the patriot to be updated.
-	 * @param memberPatriot The updated patriot data.
-	 * @return The updated patriot data.
-	 */
-	@PutMapping("/{memberId}/patriot/{patriotId}")
-	public MemberPatriot updatePatriot(@PathVariable Long memberId, @PathVariable Long patriotId,
-			@RequestBody MemberPatriot memberPatriot) {
-		log.info("Updating patriot with ID={} for member with ID={}", patriotId, memberId);
-		return memberService.updatePatriot(memberId, patriotId, memberPatriot);
 	}
 
 	/**
@@ -320,17 +327,23 @@ public class MemberController {
 	 * @param patriotId The ID of the patriot to be deleted.
 	 */
 	@DeleteMapping("/{memberId}/patriot/{patriotId}")
-	@ResponseStatus(HttpStatus.NO_CONTENT) // 204 No Content on successful deletion
-	public void deletePatriot(@PathVariable Long memberId, @PathVariable Long patriotId) {
+	public ResponseEntity<String> deletePatriot(@PathVariable Long memberId, @PathVariable Long patriotId) {
 		log.info("Deleting patriot with ID={} from member with ID={}", patriotId, memberId);
-		memberService.deletePatriot(memberId, patriotId);
+		String result = memberService.deletePatriot(memberId, patriotId);
+		return ResponseEntity.ok(result);
 	}
 
+	/**
+	 * Deletes unassigned patriot by ID
+	 * 
+	 * @param patriotId
+	 * @return
+	 */
 	@DeleteMapping("/patriot/{patriotId}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteUnassignedPatriot(@PathVariable Long patriotId) {
+	public ResponseEntity<String> deleteUnassignedPatriot(@PathVariable Long patriotId) {
 		log.info("Deleting unassigned patriot with ID={}", patriotId);
-		memberService.deleteUnassignedPatriot(patriotId);
+		String result = memberService.deleteUnassignedPatriot(patriotId);
+		return ResponseEntity.ok(result);
 	}
 
 	/**
@@ -341,9 +354,10 @@ public class MemberController {
 	 */
 	@DeleteMapping("/{memberId}/chapter/{chapterId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT) // 204 No Content on successful deletion
-	public void deleteChapter(@PathVariable Long memberId, @PathVariable Long chapterId) {
+	public ResponseEntity<String> deleteChapter(@PathVariable Long memberId, @PathVariable Long chapterId) {
 		log.info("Deleting chapter with ID={} from member with ID={}", chapterId, memberId);
-		memberService.deleteChapter(memberId, chapterId);
+		String result = memberService.deleteChapter(memberId, chapterId);
+		return ResponseEntity.ok(result);
 	}
 
 	/**

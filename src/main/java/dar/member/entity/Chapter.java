@@ -3,17 +3,12 @@ package dar.member.entity; // Defines the package where this class belongs
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 /**
  * Represents an Chapter entity in the pet store system. This class is mapped
@@ -32,20 +27,7 @@ public class Chapter {
 	private String chapterName; // First name of the chapter
 	private String chapterNumber; // Last name of the chapter
 	
-	@OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "chapter")
 	private List<Member> members = new ArrayList<>();
 
-//	// Excludes  field from equals() and hashCode() methods to prevent circular
-//	// dependencies
-//	@EqualsAndHashCode.Exclude 
-//	@ToString.Exclude // Excludes this field from the toString() method to prevent infinite loops
-//	@ManyToOne(cascade = CascadeType.ALL)
-//	// Defines a many-to-one relationship with the Member entity.
-//	// - Many chapter belong to one pet store.
-//	// - CascadeType.ALL ensures that any changes to an Chapter (persist, merge,
-//	// remove, etc.) also affect the associated Member.
-//	@JoinColumn(name = "member_id")
-//	// Specifies the foreign key column in the Chapter table that references the
-//	// Member entity
-//	private Member member; // Reference to the associated pet store
 }
