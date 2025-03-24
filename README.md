@@ -5,13 +5,12 @@
   <h1>Members Application</h1>
   
   <p>
-    Showcasing Java, MySQL, Maven, JPA, Spring Boot, and Lombok
-    with elegant error handling. 
+    Showcasing Java, MySQL, Maven, JPA, Spring Boot, and Lombok.
   </p>
     
   <p>
     Demonstrates all CRUD operations
-    and elegant error handling.
+    and elegant error handling and JUnit tests.
   </p>
   
 </div>
