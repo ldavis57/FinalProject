@@ -68,26 +68,6 @@ public class MemberService {
 	}
 
 	/**
-	 * Updates a chapter that is associated with a specific member.
-	 * 
-	 * @param memberId
-	 * @param chapterId
-	 * @param memberChapter
-	 * @return
-	 */
-	@Transactional
-	public MemberChapter updateChapter(Long memberId, Long chapterId, MemberChapter memberChapter) {
-		Chapter chapter = findChapterById(memberId, chapterId); // Ensures the chapter exists
-
-		// Update fields
-		chapter.setChapterName(memberChapter.getChapterName());
-		chapter.setChapterNumber(memberChapter.getChapterNumber());
-
-		Chapter updatedChapter = chapterDao.save(chapter);
-		return new MemberChapter(updatedChapter);
-	}
-
-	/**
 	 * Copies data from a MemberPatriot DTO into a Patriot entity. Used when
 	 * creating or updating a Patriot from client input.
 	 * 
@@ -189,6 +169,26 @@ public class MemberService {
 	}
 
 	/**
+	 * Updates a chapter that is associated with a specific member.
+	 * 
+	 * @param memberId
+	 * @param chapterId
+	 * @param memberChapter
+	 * @return
+	 */
+	@Transactional
+	public MemberChapter updateChapter(Long memberId, Long chapterId, MemberChapter memberChapter) {
+		Chapter chapter = findChapterById(memberId, chapterId); // Ensures the chapter exists
+
+		// Update fields
+		chapter.setChapterName(memberChapter.getChapterName());
+		chapter.setChapterNumber(memberChapter.getChapterNumber());
+
+		Chapter updatedChapter = chapterDao.save(chapter);
+		return new MemberChapter(updatedChapter);
+	}
+
+	/**
 	 * Finds an existing member by ID or creates a new instance if ID is null.
 	 * 
 	 * @param memberId The ID of the member.
@@ -214,8 +214,8 @@ public class MemberService {
 	}
 
 	/**
-	 * Finds chapter for a member by chapterID.
-	 * If member is already assigned, return message saying same.
+	 * Finds chapter for a member by chapterID. If member is already assigned,
+	 * return message saying same.
 	 * 
 	 * @param memberId
 	 * @param chapterId
@@ -223,10 +223,10 @@ public class MemberService {
 	 */
 	private Chapter findChapterById(Long memberId, Long chapterId) {
 		Member member = memberDao.findById(memberId)
-			.orElseThrow(() -> new NoSuchElementException("Member with ID=" + memberId + " was not found."));
+				.orElseThrow(() -> new NoSuchElementException("Member with ID=" + memberId + " was not found."));
 
 		Chapter chapter = chapterDao.findById(chapterId)
-			.orElseThrow(() -> new NoSuchElementException("Chapter with ID=" + chapterId + " was not found."));
+				.orElseThrow(() -> new NoSuchElementException("Chapter with ID=" + chapterId + " was not found."));
 
 		// If the member has no chapter
 		if (member.getChapter() == null) {
@@ -250,23 +250,18 @@ public class MemberService {
 	 * @return
 	 */
 	private Patriot findPatriotById(Long memberId, Long patriotId) {
-	    Patriot patriot = patriotDao.findById(patriotId)
-	        .orElseThrow(() -> new ResponseStatusException(
-	            HttpStatus.NOT_FOUND,
-	            "Patriot with ID=" + patriotId + " was not found."
-	        ));
+		Patriot patriot = patriotDao.findById(patriotId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"Patriot with ID=" + patriotId + " was not found."));
 
-	    boolean found = patriot.getMember().stream()
-	        .anyMatch(member -> member.getMemberId().equals(memberId));
+		boolean found = patriot.getMember().stream().anyMatch(member -> member.getMemberId().equals(memberId));
 
-	    if (!found) {
-	        throw new ResponseStatusException(
-	            HttpStatus.BAD_REQUEST,
-	            "Patriot with ID=" + patriotId + " is not a patriot of the member with ID=" + memberId
-	        );
-	    }
+		if (!found) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Patriot with ID=" + patriotId + " is not a patriot of the member with ID=" + memberId);
+		}
 
-	    return patriot;
+		return patriot;
 	}
 
 	/**
@@ -321,6 +316,12 @@ public class MemberService {
 	public ChapterAssignmentResult saveChapter(Long memberId, MemberChapter memberChapter) {
 		Member member = findMemberById(memberId);
 
+		if (memberChapter.getChapterName() == null || memberChapter.getChapterName().trim().isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chapter name is required.");
+		}
+		if (memberChapter.getChapterNumber() == null || memberChapter.getChapterNumber().trim().isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chapter number is required.");
+		}
 		if (member.getChapter() != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This member is already assigned to a chapter.");
 		}
@@ -474,23 +475,6 @@ public class MemberService {
 	}
 
 	/**
-	 * Get all patriots assigned or not.
-	 * 
-	 * @return
-	 */
-	@Transactional(readOnly = true)
-	public List<MemberPatriot> getAllPatriots() {
-		List<Patriot> patriots = patriotDao.findAll(); // Fetch all patriot
-		List<MemberPatriot> patriotDTOs = new LinkedList<>();
-
-		for (Patriot patriot : patriots) {
-			patriotDTOs.add(new MemberPatriot(patriot));
-		}
-
-		return patriotDTOs;
-	}
-
-	/**
 	 * Gets chapter by chapter ID
 	 * 
 	 * @param memberId
@@ -522,6 +506,23 @@ public class MemberService {
 	}
 
 	/**
+	 * Get all patriots assigned or not.
+	 * 
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	public List<MemberPatriot> getAllPatriots() {
+		List<Patriot> patriots = patriotDao.findAll(); // Fetch all patriot
+		List<MemberPatriot> patriotDTOs = new LinkedList<>();
+
+		for (Patriot patriot : patriots) {
+			patriotDTOs.add(new MemberPatriot(patriot));
+		}
+
+		return patriotDTOs;
+	}
+
+	/**
 	 * Retrieves list of all chapters assigned or not.
 	 * 
 	 * @return
@@ -532,7 +533,7 @@ public class MemberService {
 		List<MemberChapter> chapterDTOs = new LinkedList<>();
 
 		for (Chapter chapter : chapters) {
-			chapterDTOs.add(new MemberChapter(chapter));
+			chapterDTOs.add(new MemberData.MemberChapter(chapter));
 		}
 
 		return chapterDTOs;
@@ -558,17 +559,16 @@ public class MemberService {
 		memberDao.delete(member);
 
 		if (isOnlyMemberInChapter) {
-		    chapterDao.delete(chapter);
-		    message = String.format("Member with ID=%d was deleted. Chapter '%s' (ID=%d) was also deleted",
-		        memberId, chapter.getChapterName(), chapter.getChapterId());
+			chapterDao.delete(chapter);
+			message = String.format("Member with ID=%d was deleted. Chapter '%s' (ID=%d) was also deleted", memberId,
+					chapter.getChapterName(), chapter.getChapterId());
 		} else if (chapter != null) {
-		    message = String.format(
-		        "Member with ID=%d was deleted. Chapter '%s' (ID=%d) is assigned to other members so was not deleted.",
-		        memberId, chapter.getChapterName(), chapter.getChapterId());
+			message = String.format(
+					"Member with ID=%d was deleted. Chapter '%s' (ID=%d) is assigned to other members so was not deleted.",
+					memberId, chapter.getChapterName(), chapter.getChapterId());
 		} else {
-		    message = String.format("Member with ID=%d was deleted. No chapter was assigned.", memberId);
+			message = String.format("Member with ID=%d was deleted. No chapter was assigned.", memberId);
 		}
-
 
 		return message;
 	}

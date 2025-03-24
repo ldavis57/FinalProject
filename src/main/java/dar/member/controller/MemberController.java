@@ -254,9 +254,20 @@ public class MemberController {
 	 * @return A list of all chapter in all members.
 	 */
 	@GetMapping("/chapters")
-	public List<MemberChapter> getAllChapters() {
+	public List<MemberData.MemberChapter> getAllChapters() {
 		log.info("Retrieving all chapters across all members");
 		return memberService.getAllChapters();
+	}
+
+	/**
+	 * Retrieves all patriot across all members.
+	 * 
+	 * @return A list of all patriot in all members.
+	 */
+	@GetMapping("/patriots")
+	public List<MemberPatriot> getAllPatriots() {
+		log.info("Retrieving all patriots across all members");
+		return memberService.getAllPatriots();
 	}
 
 	/**
@@ -269,17 +280,6 @@ public class MemberController {
 	public List<MemberPatriot> getAllPatriotsForMember(@PathVariable Long memberId) {
 		log.info("Retrieving all patriots for member with ID={}", memberId);
 		return memberService.getPatriotsByMemberId(memberId);
-	}
-
-	/**
-	 * Retrieves all patriot across all members.
-	 * 
-	 * @return A list of all patriot in all members.
-	 */
-	@GetMapping("/patriots")
-	public List<MemberPatriot> getAllPatriots() {
-		log.info("Retrieving all patriots across all members");
-		return memberService.getAllPatriots();
 	}
 
 	/**
